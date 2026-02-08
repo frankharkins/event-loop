@@ -1,4 +1,4 @@
-module EventCreator exposing (Msg(..), DraftEvent, view, emptyDraft)
+module EventCreator exposing (Msg(..), DraftEvent, view, emptyDraft, textInputId)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,6 +15,9 @@ type alias DraftEvent =
   , isBlocked: Bool
   }
 
+textInputId : String
+textInputId = "event-creator-input"
+
 emptyDraft : DraftEvent
 emptyDraft =
   { name = ""
@@ -28,6 +31,7 @@ view expanded draft =
       Html.form [ onSubmit (CreateEvent draft) ] [
         input [ placeholder "Event name"
               , value draft.name
+              , id textInputId
               , onInput (\s -> UpdateDraft { draft | name = s })
               ] []
         , div []

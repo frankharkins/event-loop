@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events
+import Browser.Dom
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Time
@@ -10,6 +11,7 @@ import Platform.Cmd as Cmd
 import Event exposing (..)
 import EventCreator exposing (..)
 import Key exposing (keyDecoder)
+import Task
 
 -- MAIN PROGRAM MODELLING
 
@@ -61,12 +63,14 @@ port uuidAndTime : ({ uuid: String, time: Int } -> msg) -> Sub msg
 type Msg
   = Port PortMsg
   | User EventCreator.Msg
+  | NoOp
 
 -- UPDATE
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
+    NoOp -> (model, Cmd.none)
     Port portmsg -> case portmsg of
       UuidAndTime { uuid, time } ->
         case model.submittedDraft of
@@ -83,12 +87,16 @@ update msg model =
               , Cmd.none
               )
           Nothing -> (model, Cmd.none)
-      KeyPress key -> case key of
-        Key.Spacebar -> case model.events of
-            first::tail -> ({ model | events = tail ++ [first] }, Cmd.none)
-            _ -> (model, Cmd.none)
-        Key.N -> ({ model | mode = Drafting }, Cmd.none)
-        _ -> (model, Cmd.none)
+      KeyPress key ->
+        case model.mode of
+          Drafting -> (model, Cmd.none)
+          ViewEvents ->
+            case key of
+              Key.Spacebar -> case model.events of
+                  first::tail -> ({ model | events = tail ++ [first] }, Cmd.none)
+                  _ -> (model, Cmd.none)
+              Key.N -> ({ model | mode = Drafting }, Cmd.none)
+              _ -> (model, Cmd.none)
     User usrmsg -> case usrmsg of
       EventCreator.UpdateDraft newDraft ->
         ({ model | draft = newDraft }, Cmd.none)
@@ -96,7 +104,10 @@ update msg model =
         { model | mode = ViewEvents, draft = EventCreator.emptyDraft, submittedDraft = Just draft }
         , getNewEventData ()
         )
-      EventCreator.Expand -> ({ model | mode = Drafting }, Cmd.none)
+      EventCreator.Expand -> (
+        { model | mode = Drafting }
+        , Task.attempt (\_ -> NoOp) (Browser.Dom.focus EventCreator.textInputId)
+        )
       EventCreator.Hide -> ({ model | mode = ViewEvents }, Cmd.none)
 
 -- VIEW
