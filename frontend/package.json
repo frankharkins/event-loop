@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "minify": "^15.0.1",
+    "tailwindcss": "^4.1.18",
+    "uglify-js": "^3.19.3"
+  }
+}

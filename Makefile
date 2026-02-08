@@ -7,20 +7,21 @@ install: # Install everything needed to build this project
 	chmod +x elm
 	mv elm .bin/
 
-	npm install uglify-js --global
-	npm install minify --global
+	(cd frontend && npm install)
 
 run: # Build the site
-	(cd frontend && ../.bin/elm make src/Main.elm --output=main.js)
+	trap 'kill %1; kill %2' SIGINT
+	(cd frontend && while inotifywait -r . -e create,delete,modify; do ../.bin/elm make src/Main.elm --output=main.js; done) &
+	(cd frontend && npx @tailwindcss/cli -i ./main.css -o ./compiled.css --watch)
 
 build: # Build and optimize for production
 	rm -rf frontend/build
 	mkdir frontend/build
 
 	(cd frontend && ../.bin/elm make src/Main.elm --output=main.js --optimize)
-	uglifyjs frontend/main.js --compress 'pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output frontend/build/main.js
-	minify frontend/index.html > frontend/build/index.html
-	minify frontend/main.css > frontend/build/main.css
+	(cd frontend && uglifyjs main.js --compress 'pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output build/main.js)
+	(cd frontend && minify index.html > build/index.html)
+	(cd frontend && npx @tailwindcss/cli -i main.css -o build/compiled.css --minify)
 
 deploy:
 	gh workflow run "deploy.yml"
