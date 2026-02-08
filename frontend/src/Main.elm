@@ -1,13 +1,15 @@
 port module Main exposing (..)
 
 import Browser
+import Browser.Events
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Time
+import Platform.Cmd as Cmd
 
 import Event exposing (..)
 import EventCreator exposing (..)
-import Platform.Cmd as Cmd
+import Key exposing (keyDecoder)
 
 -- MAIN PROGRAM MODELLING
 
@@ -42,15 +44,19 @@ init _ = (
   )
 
 -- PORTS AND SUBSCRIPTIONS
+type PortMsg
+  = UuidAndTime { uuid: String, time: Int }
+  | KeyPress Key.Key
 
 subscriptions : Model -> Sub PortMsg
-subscriptions _ =
-  uuidAndTime UuidAndTime
+subscriptions _ = Sub.batch
+  [ uuidAndTime UuidAndTime
+  , keyDecoder |> Browser.Events.onKeyDown >> Sub.map KeyPress
+  ]
 
 port getNewEventData : () -> Cmd msg
 port uuidAndTime : ({ uuid: String, time: Int } -> msg) -> Sub msg
 
-type PortMsg = UuidAndTime { uuid: String, time: Int }
 
 type Msg
   = Port PortMsg
@@ -77,6 +83,12 @@ update msg model =
               , Cmd.none
               )
           Nothing -> (model, Cmd.none)
+      KeyPress key -> case key of
+        Key.Spacebar -> case model.events of
+            first::tail -> ({ model | events = tail ++ [first] }, Cmd.none)
+            _ -> (model, Cmd.none)
+        Key.N -> ({ model | mode = Drafting }, Cmd.none)
+        _ -> (model, Cmd.none)
     User usrmsg -> case usrmsg of
       EventCreator.UpdateDraft newDraft ->
         ({ model | draft = newDraft }, Cmd.none)
