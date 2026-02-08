@@ -1,13 +1,17 @@
 module Event exposing (Event, view)
 
 import Html exposing (..)
+import Time
 
--- import Time
+
+-- type Msg
+--   = Update Event
+--   | Delete { id: String }
 
 type alias Event =
   { name: String
-  -- , uuid: String,
-  -- , createdAt: Time.Posix
+  , id: String
+  , createdAt: Time.Posix
   , isBlocked: Bool
   }
 

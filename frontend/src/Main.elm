@@ -1,49 +1,78 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
-import Browser.Dom as Dom
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Time
 
 import Event exposing (..)
 import EventCreator exposing (..)
 
-main : Program () Model EventCreator.Msg
+main : Program () Model Msg
 main =
   Browser.element
     { init = init
-    , view = view
+    , view = view >> Html.map User
     , update = update
-    , subscriptions = subscriptions
+    , subscriptions = subscriptions >> Sub.map Port
     }
 
 type alias Model =
   { draft: EventCreator.DraftEvent
+  , submittedDraft: Maybe EventCreator.DraftEvent
   , events: List Event
   }
 
-init : () -> ( Model, Cmd EventCreator.Msg )
+init : () -> ( Model, Cmd Msg )
 init _ = (
   { draft = EventCreator.emptyDraft
+  , submittedDraft = Nothing
   , events = []
   }
   , Cmd.none
   )
 
-update : EventCreator.Msg -> Model -> ( Model, Cmd EventCreator.Msg )
+port getNewEventData : () -> Cmd msg
+port uuidAndTime : ({ uuid: String, time: Int } -> msg) -> Sub msg
+
+type PortMsg = UuidAndTime { uuid: String, time: Int }
+
+type Msg
+  = Port PortMsg
+  | User EventCreator.Msg
+
+update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
   case msg of
-    EventCreator.UpdateDraft newDraft -> ({ model | draft = newDraft }, Cmd.none)
-    EventCreator.CreateEvent draft -> (
-      { events = [draft] ++ model.events, draft = emptyDraft }
-      , Cmd.none
-      )
+    Port portmsg -> case portmsg of
+      UuidAndTime { uuid, time } ->
+        case model.submittedDraft of
+          Just submitted ->
+            let
+              newEvent =
+                { name = submitted.name
+                , isBlocked = submitted.isBlocked
+                , createdAt = Time.millisToPosix time
+                , id = uuid
+                }
+            in
+              ({ model | submittedDraft = Nothing, events = (newEvent :: model.events) }
+              , Cmd.none
+              )
+          Nothing -> (model, Cmd.none)
+    User usrmsg -> case usrmsg of
+      EventCreator.UpdateDraft newDraft -> ({ model | draft = newDraft }, Cmd.none)
+      EventCreator.CreateEvent draft -> (
+        { model | draft = emptyDraft, submittedDraft = Just draft }
+        , getNewEventData ()
+        )
 
 
 -- SUBSCRIPTIONS
 
-subscriptions : Model -> Sub EventCreator.Msg
-subscriptions _ = Sub.none
+subscriptions : Model -> Sub PortMsg
+subscriptions _ =
+  uuidAndTime UuidAndTime
 
 -- VIEW
 

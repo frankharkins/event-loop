@@ -19,6 +19,15 @@
 const app = Elm.Main.init({
     node: document.getElementById('elm-app')
 });
+
+function genId() {
+  const arr = crypto.getRandomValues(new Uint32Array(2));
+  return Array.from(arr).map((num) => num.toString(16)).join('');
+}
+
+app.ports.getNewEventData.subscribe(
+  () => app.ports.uuidAndTime.send({ uuid: genId(), time: Date.now() })
+);
 </script>
 
 
