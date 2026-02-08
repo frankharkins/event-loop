@@ -2,13 +2,13 @@ module EventCreator exposing (Msg(..), DraftEvent, view, emptyDraft)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onCheck, onSubmit)
-
-import Event exposing (Event)
+import Html.Events exposing (onInput, onCheck, onSubmit, onClick)
 
 type Msg
   = CreateEvent DraftEvent
   | UpdateDraft DraftEvent
+  | Expand
+  | Hide
 
 type alias DraftEvent =
   { name: String
@@ -21,18 +21,25 @@ emptyDraft =
   , isBlocked = False
   }
 
-view : DraftEvent -> Html Msg
-view draft = Html.form [ onSubmit (CreateEvent draft) ] [
-  input [ placeholder "Event name"
-        , value draft.name
-        , onInput (\s -> UpdateDraft { draft | name = s })
-        ] []
-  , div []
-    [ input [ type_ "checkbox"
-          , onCheck (\v -> UpdateDraft { draft | isBlocked = v })
-          , checked draft.isBlocked
-          ] []
-    , text "blocked"
+view : Bool -> DraftEvent -> Html Msg
+view expanded draft =
+  if expanded then
+    div [] [
+      Html.form [ onSubmit (CreateEvent draft) ] [
+        input [ placeholder "Event name"
+              , value draft.name
+              , onInput (\s -> UpdateDraft { draft | name = s })
+              ] []
+        , div []
+          [ input [ type_ "checkbox"
+                , onCheck (\v -> UpdateDraft { draft | isBlocked = v })
+                , checked draft.isBlocked
+                ] []
+          , text "blocked"
+          ]
+        , button [ type_ "submit" ] [ text "Add" ]
+        ]
+        , button [ onClick Hide ] [ text "Hide" ]
     ]
-  , button [ type_ "submit" ] [ text "Add" ]
-  ]
+  else
+    button [ onClick Expand ] [ text "+" ]

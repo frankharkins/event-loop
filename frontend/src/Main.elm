@@ -7,6 +7,9 @@ import Time
 
 import Event exposing (..)
 import EventCreator exposing (..)
+import Platform.Cmd as Cmd
+
+-- MAIN PROGRAM MODELLING
 
 main : Program () Model Msg
 main =
@@ -17,20 +20,32 @@ main =
     , subscriptions = subscriptions >> Sub.map Port
     }
 
+type AppMode
+  = Drafting
+  | ViewEvents
+
 type alias Model =
-  { draft: EventCreator.DraftEvent
+  { mode: AppMode
+  , draft: EventCreator.DraftEvent
   , submittedDraft: Maybe EventCreator.DraftEvent
   , events: List Event
   }
 
 init : () -> ( Model, Cmd Msg )
 init _ = (
-  { draft = EventCreator.emptyDraft
+  { mode = Drafting
+  , draft = EventCreator.emptyDraft
   , submittedDraft = Nothing
   , events = []
   }
   , Cmd.none
   )
+
+-- PORTS AND SUBSCRIPTIONS
+
+subscriptions : Model -> Sub PortMsg
+subscriptions _ =
+  uuidAndTime UuidAndTime
 
 port getNewEventData : () -> Cmd msg
 port uuidAndTime : ({ uuid: String, time: Int } -> msg) -> Sub msg
@@ -40,6 +55,8 @@ type PortMsg = UuidAndTime { uuid: String, time: Int }
 type Msg
   = Port PortMsg
   | User EventCreator.Msg
+
+-- UPDATE
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
@@ -61,24 +78,20 @@ update msg model =
               )
           Nothing -> (model, Cmd.none)
     User usrmsg -> case usrmsg of
-      EventCreator.UpdateDraft newDraft -> ({ model | draft = newDraft }, Cmd.none)
+      EventCreator.UpdateDraft newDraft ->
+        ({ model | draft = newDraft }, Cmd.none)
       EventCreator.CreateEvent draft -> (
-        { model | draft = emptyDraft, submittedDraft = Just draft }
+        { model | mode = ViewEvents, draft = EventCreator.emptyDraft, submittedDraft = Just draft }
         , getNewEventData ()
         )
-
-
--- SUBSCRIPTIONS
-
-subscriptions : Model -> Sub PortMsg
-subscriptions _ =
-  uuidAndTime UuidAndTime
+      EventCreator.Expand -> ({ model | mode = Drafting }, Cmd.none)
+      EventCreator.Hide -> ({ model | mode = ViewEvents }, Cmd.none)
 
 -- VIEW
 
 view : Model -> Html EventCreator.Msg
 view model = div [] ([
   h1 [] [ text "Event loop" ]
-  , EventCreator.view model.draft
+  , EventCreator.view (model.mode == Drafting) model.draft
   ] ++ (model.events |> List.map Event.view)
   )
