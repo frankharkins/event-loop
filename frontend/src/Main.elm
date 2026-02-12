@@ -96,14 +96,33 @@ update msg model =
                   first::tail -> ({ model | events = tail ++ [first] }, Cmd.none)
                   _ -> (model, Cmd.none)
               Key.N -> ({ model | mode = Drafting }, Cmd.none)
+              Key.B ->
+                let
+                  newEvents = case model.events of
+                      first::rest -> { first | isBlocked = not first.isBlocked }::rest
+                      _ -> model.events
+                in
+                  ({ model | events = newEvents  }, Cmd.none)
+              Key.D ->
+                let
+                  newEvents = case model.events of
+                      first::rest -> rest
+                      _ -> model.events
+                in
+                  ({ model | events = newEvents  }, Cmd.none)
               _ -> (model, Cmd.none)
     User usrmsg -> case usrmsg of
       EventCreator.UpdateDraft newDraft ->
-        ({ model | draft = newDraft }, Cmd.none)
-      EventCreator.CreateEvent draft -> (
-        { model | mode = ViewEvents, draft = EventCreator.emptyDraft, submittedDraft = Just draft }
-        , getNewEventData ()
-        )
+            ({ model | draft = newDraft }, Cmd.none)
+      EventCreator.CreateEvent draft ->
+        let
+          trimmedDraft = { draft | name = String.trim draft.name }
+        in case trimmedDraft.name of
+          "" -> (model, Cmd.none)
+          _ -> (
+            { model | mode = ViewEvents, draft = EventCreator.emptyDraft, submittedDraft = Just trimmedDraft }
+            , getNewEventData ()
+            )
       EventCreator.Expand -> (
         { model | mode = Drafting }
         , Task.attempt (\_ -> NoOp) (Browser.Dom.focus EventCreator.textInputId)
@@ -113,8 +132,12 @@ update msg model =
 -- VIEW
 
 view : Model -> Html EventCreator.Msg
-view model = div [] ([
-  h1 [] [ text "Event loop" ]
-  , EventCreator.view (model.mode == Drafting) model.draft
-  ] ++ (model.events |> List.map Event.view)
-  )
+view model = div []
+  [  header []
+    [ h1 [ class "max-w-4xl px-16 mx-auto py-8 text-bold" ] [ text "Event loop" ]
+    ]
+  , div [ class "max-w-4xl px-16 mx-auto" ]
+    [ EventCreator.view (model.mode == Drafting) model.draft
+    , Event.view model.events
+    ]
+  ]

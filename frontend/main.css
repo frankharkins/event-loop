@@ -1,1 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Karla&family=Source+Code+Pro:wght@400;700&display=swap');
 @import "tailwindcss";
+
+:root {
+
+    --color-white: #ecf2f8;
+    --color-grey-01: #d8dee4;
+    --color-grey-02: #c3c9cf;
+    --color-grey-03: #afb5bb;
+    --color-grey-04: #72777d;
+    --color-grey-05: #363a40;
+    --color-grey-06: #21252b;
+    --color-black: #0d1117;
+    --color-cursor: #58a6ff;
+    --color-blue: #0969da;
+    --color-cyan: #56d4dd;
+
+    --color-title: var(--color-black);
+    --color-bg: var(--color-white);
+    --color-body: var(--color-grey-04);
+    --color-muted: var(--color-grey-02);
+    --color-muted-extra: var(--color-grey-01);
+    --color-link: var(--color-blue);
+    --color-focus: var(--color-blue);
+    --color-cursor: var(--color-blue);
+
+    background-color: var(--color-white);
+    /*@media (prefers-color-scheme: dark) {
+        background-color: var(--color-black);
+    }*/
+
+    color: var(--color-body);
+    transition: all 0.1s ease-out;
+
+    /*[data-theme="Dark"] {
+        --color-title: var(--color-white);
+        --color-bg: var(--color-black);
+        --color-body: var(--color-grey-03);
+        --color-muted: var(--color-grey-05);
+        --color-muted-extra: var(--color-grey-06);
+        --color-link: var(--color-cyan);
+        --color-focus: var(--color-cyan);
+        --color-cursor: var(--color-cyan);
+    }
+
+    [data-theme="Default"] {
+        @media (prefers-color-scheme: dark) {
+            --color-title: var(--color-white);
+            --color-bg: var(--color-black);
+            --color-body: var(--color-grey-03);
+            --color-muted: var(--color-grey-05);
+            --color-muted-extra: var(--color-grey-06);
+            --color-link: var(--color-cyan);
+            --color-focus: var(--color-cyan);
+            --color-cursor: var(--color-cyan);
+        }
+    }*/
+
+    font-family: "Source Code Pro", "sans-serif";
+    line-height: 20px;
+    @media (max-width: 640px) {
+        font-size: 15px;
+        line-height: 18px;
+    }
+}
+
+@keyframes float {
+  from { transform: translateY(calc(1lh + 24px));}
+  to { transform: translateX(0);}
+}
+
+@keyframes fade-border-and-text {
+    from { border-color: transparent; color: var(--color-muted); }
+    to {};
+}
+
+@keyframes float-2 {
+  from { transform: translateY(calc(1lh + 24px));}
+  to { transform: translateX(0);}
+}
+
+@keyframes float-far {
+  from { transform: translateY(calc(3lh + 16px));}
+  to { transform: translateX(0);}
+}
+
+@keyframes float-in {
+  from {
+      transform: translateY(calc(1lh + 24px));
+      opacity: 0%;
+  }
+  to {
+      transform: translateX(0);
+      opacity: 100%;
+  }
+}
+
+@keyframes float-out {
+  from { opacity: 0%;}
+  to { opacity: 100%; }
+}
+
+@keyframes float-out-2 {
+  from { opacity: 0%;}
+  to { opacity: 100%; }
+}
+
+
+
+@theme {
+  --color-title: var(--color-title);
+  --color-bg: var(--color-bg);
+  --color-body: var(--color-body);
+  --color-link: var(--color-link);
+  --color-focus: var(--color-focus);
+  --color-cursor: var(--color-cursor);
+  --color-muted: var(--color-muted);
+  --color-muted-extra: var(--color-muted-extra);
+
+  --time-quick: 500ms;
+  --animate-float: var(--time-quick) ease-out float;
+  --animate-float-2: var(--time-quick) ease-out float-2;
+  --animate-main-task: var(--time-quick) ease-out float-far, var(--time-quick) ease-out fade-border-and-text;
+  --animate-float-in: var(--time-quick) ease-out float-in;
+  --animate-float-out: var(--time-quick) ease-out float-out;
+  --animate-float-out-2: var(--time-quick) ease-out float-out-2;
+}

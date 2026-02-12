@@ -6,6 +6,8 @@ type Key
   = Spacebar
   | Backspace
   | N
+  | B
+  | D
   | Other
 
 keyDecoder : Decode.Decoder Key
@@ -23,5 +25,9 @@ toDirection string =
       Backspace
     "n" ->
       N
+    "b" ->
+      B
+    "d" ->
+      D
     _ ->
       Other
