@@ -1,5 +1,6 @@
 /.bin
 /frontend/elm-stuff
+/frontend/build
 /frontend/main.js
 /frontend/compiled.css
 /frontend/node_modules

@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    environment:
+      name: push
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install other dependencies
+        run: make install
+
+      - name: build
+        run: |
+          make build
+
+      - name: Upload frontend
+        id: pages-artifact-upload
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: 'frontend/build/'
+
+  deploy:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: deploy
+      url: ${{ steps.pages-artifact-upload.outputs.page_url }}
+
+    steps:
+      - name: Deploy pages
+        id: pages-artifact-upload
+        uses: actions/deploy-pages@v4
