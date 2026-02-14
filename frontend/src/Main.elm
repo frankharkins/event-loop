@@ -134,7 +134,10 @@ update msg model =
 view : Model -> Html EventCreator.Msg
 view model = div []
   [  header []
-    [ h1 [ class "max-w-4xl px-16 mx-auto py-8 text-bold" ] [ text "Event loop" ]
+    [ h1 [ class "max-w-4xl px-16 mx-auto py-8 text-bold flex justify-between" ]
+      [ text "Event loop"
+      , img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 pb-1" ] []
+      ]
     ]
   , div [ class "max-w-4xl px-16 mx-auto" ]
     [ EventCreator.view (model.mode == Drafting) model.draft
