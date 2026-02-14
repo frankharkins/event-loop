@@ -19,7 +19,7 @@ main : Program () Model Msg
 main =
   Browser.element
     { init = init
-    , view = view >> Html.map User
+    , view = view
     , update = update
     , subscriptions = subscriptions >> Sub.map Port
     }
@@ -59,13 +59,28 @@ subscriptions _ = Sub.batch
 port getNewEventData : () -> Cmd msg
 port uuidAndTime : ({ uuid: String, time: Int } -> msg) -> Sub msg
 
-
 type Msg
   = Port PortMsg
-  | User EventCreator.Msg
+  | EventCreatorMsg EventCreator.Msg
+  | EventButtonMsg Event.Msg
   | NoOp
 
 -- UPDATE
+
+nextItem : Model -> Model
+nextItem model = case model.events of
+  first::tail -> { model | events = tail ++ [first] }
+  _ -> model
+
+bumpToTop : Model -> String -> Model
+bumpToTop model id =
+  let
+   newEvents = model.events
+     |> List.partition (\e -> e.id == id)
+     |> (\a -> [Tuple.first a, Tuple.second a])
+     |> List.concat
+  in
+    { model | events = newEvents }
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -92,9 +107,7 @@ update msg model =
           Drafting -> (model, Cmd.none)
           ViewEvents ->
             case key of
-              Key.Spacebar -> case model.events of
-                  first::tail -> ({ model | events = tail ++ [first] }, Cmd.none)
-                  _ -> (model, Cmd.none)
+              Key.Spacebar -> (nextItem model, Cmd.none)
               Key.N -> ({ model | mode = Drafting }, Cmd.none)
               Key.B ->
                 let
@@ -106,12 +119,12 @@ update msg model =
               Key.D ->
                 let
                   newEvents = case model.events of
-                      first::rest -> rest
+                      _::rest -> rest
                       _ -> model.events
                 in
                   ({ model | events = newEvents  }, Cmd.none)
               _ -> (model, Cmd.none)
-    User usrmsg -> case usrmsg of
+    EventCreatorMsg creatorMsg -> case creatorMsg of
       EventCreator.UpdateDraft newDraft ->
             ({ model | draft = newDraft }, Cmd.none)
       EventCreator.CreateEvent draft ->
@@ -128,10 +141,22 @@ update msg model =
         , Task.attempt (\_ -> NoOp) (Browser.Dom.focus EventCreator.textInputId)
         )
       EventCreator.Hide -> ({ model | mode = ViewEvents }, Cmd.none)
+    EventButtonMsg buttonMsg -> case buttonMsg of
+      Event.NextItem -> (nextItem model, Cmd.none)
+      Event.BumpToTop id -> (bumpToTop model id, Cmd.none)
+      Event.Delete id ->
+        ({ model | events = List.filter (\e -> not (e.id == id)) model.events }, Cmd.none)
+      Event.ToggleBlocked id ->
+        let
+          newEvents = List.map
+            (\e -> if e.id == id then { e | isBlocked = not e.isBlocked } else e)
+            model.events
+        in
+          ({ model | events = newEvents }, Cmd.none)
 
 -- VIEW
 
-view : Model -> Html EventCreator.Msg
+view : Model -> Html Msg
 view model = div []
   [  header []
     [ h1 [ class "max-w-4xl px-16 mx-auto py-8 text-bold flex justify-between" ]
@@ -140,7 +165,7 @@ view model = div []
       ]
     ]
   , div [ class "max-w-4xl px-16 mx-auto" ]
-    [ EventCreator.view (model.mode == Drafting) model.draft
-    , Event.view model.events
+    [ EventCreator.view (model.mode == Drafting) model.draft |> Html.map EventCreatorMsg
+    , Event.view model.events |> Html.map EventButtonMsg
     ]
   ]

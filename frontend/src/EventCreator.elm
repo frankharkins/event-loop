@@ -25,7 +25,7 @@ emptyDraft =
   }
 
 mainInputClass : String
-mainInputClass = "w-full border-1 border-muted-extra p-2 my-8 -mx-2 rounded-[4px] cursor-pointer hover:border-muted hover:bg-muted-extra ease-out duration-100"
+mainInputClass = "w-full border-1 border-muted-extra p-2 my-8 -mx-2 rounded-[4px] cursor-pointer hover:border-muted hover:bg-muted-extra ease-out duration-100 accent-cursor"
 
 buttonClass : String
 buttonClass = "p-2 rounded-[4px] min-w-16 border-1 border-transparent cursor-pointer hover:border-muted-extra"
@@ -54,6 +54,7 @@ view expanded draft =
               [ input [ type_ "checkbox"
                       , onCheck (\v -> UpdateDraft { draft | isBlocked = v })
                       , checked draft.isBlocked
+                      , class "accent-cursor"
                       ] []
               , span [ class "ml-2" ] [ text "blocked" ]
               ]
