@@ -94,7 +94,7 @@ controlPanelButton : String -> Msg -> (String -> List (Attribute Msg) -> Html Ms
 controlPanelButton name action icon =
   button
     [ onClick action
-    , class "opacity-0 group-hover:opacity-100 cursor-pointer duration-100 bg-bg hover:bg-muted-extra text-muted hover:text-body rounded-[2px] w-[calc(1lh_+_.5rem)] h-full p-1"
+    , class "accent-cursor opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer duration-100 bg-bg hover:bg-muted-extra text-muted hover:text-body rounded-[2px] w-[calc(1lh_+_.5rem)] h-full p-1"
     , title name
     ]
     [ icon name [ SvgAttr.class "w-full h-full" ]
