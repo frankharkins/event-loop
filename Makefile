@@ -9,10 +9,15 @@ install: # Install everything needed to build this project
 
 	(cd frontend && npm install)
 
-run: # Build the site
-	trap 'kill %1; kill %2' SIGINT
-	(cd frontend && while inotifywait -r . -e create,delete,modify; do ../.bin/elm make src/Main.elm --output=main.js; done) &
-	(cd frontend && npx @tailwindcss/cli -i ./main.css -o ./compiled.css --watch)
+run: # Build the site and watch for changes
+	(rm -rf frontend/build && mkdir -p frontend/build)
+	(cp -R frontend/static frontend/build)
+	(cp frontend/index.html frontend/build/index.html)
+	(cd frontend && ../.bin/elm make src/Main.elm --output=build/main.js)
+	trap 'kill %1' SIGINT
+	(cd frontend && while inotifywait -r ./src -e create,delete,modify; do ../.bin/elm make src/Main.elm --output=build/main.js ; done) &
+	(cd frontend && npx @tailwindcss/cli -i main.css -o build/compiled.css --watch=always) &
+	(cd frontend && npx live-server --mount='/event-loop:build' --open='/event-loop')
 
 build: # Build and optimize for production
 	rm -rf frontend/build
