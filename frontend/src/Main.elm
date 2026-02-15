@@ -6,12 +6,14 @@ import Browser.Dom
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Time
+import Task
 import Platform.Cmd as Cmd
 
 import Event exposing (..)
 import EventCreator exposing (..)
 import Key exposing (keyDecoder)
-import Task
+import LocalStorage exposing (..)
+import Process
 
 -- MAIN PROGRAM MODELLING
 
@@ -33,6 +35,7 @@ type alias Model =
   , draft: EventCreator.DraftEvent
   , submittedDraft: Maybe EventCreator.DraftEvent
   , events: List Event
+  , unsavedChanges: Int
   }
 
 init : () -> ( Model, Cmd Msg )
@@ -41,29 +44,47 @@ init _ = (
   , draft = EventCreator.emptyDraft
   , submittedDraft = Nothing
   , events = []
+  , unsavedChanges = 0
   }
-  , Cmd.none
+  , requestLocalStorage "events"
   )
 
 -- PORTS AND SUBSCRIPTIONS
 type PortMsg
   = UuidAndTime { uuid: String, time: Int }
   | KeyPress Key.Key
+  | ReadLocalStorage LocalStorageValue
 
 subscriptions : Model -> Sub PortMsg
 subscriptions _ = Sub.batch
   [ uuidAndTime UuidAndTime
   , keyDecoder |> Browser.Events.onKeyDown >> Sub.map KeyPress
+  , readLocalStorage ReadLocalStorage
   ]
 
+-- To create a new event, we request the time and a UUID from JS through the
+-- getNewEventData port. JS sends that information to the uuidAndTimePort.
 port getNewEventData : () -> Cmd msg
 port uuidAndTime : ({ uuid: String, time: Int } -> msg) -> Sub msg
+-- We write key/value pairs to local storage. We can also request a key and the
+-- pair will be sent to the readLocalStorage port.
+port writeLocalStorage : LocalStorageValue -> Cmd msg
+port requestLocalStorage : String -> Cmd msg
+port readLocalStorage : (LocalStorageValue -> msg) -> Sub msg
 
 type Msg
   = Port PortMsg
   | EventCreatorMsg EventCreator.Msg
   | EventButtonMsg Event.Msg
+  | AttemptSave Int
   | NoOp
+
+requestSave : Model -> (Model, Cmd Msg)
+requestSave model =
+  ({ model | unsavedChanges = model.unsavedChanges + 1 }
+  , Process.sleep 500
+    |> Task.perform (\_ -> AttemptSave (model.unsavedChanges + 1))
+  )
 
 -- UPDATE
 
@@ -86,7 +107,20 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
     NoOp -> (model, Cmd.none)
+    AttemptSave unsavedChanges ->
+      if unsavedChanges >= model.unsavedChanges then
+        ({ model | unsavedChanges = 0 }
+        , writeLocalStorage { key = "events", value = encodeEventList model.events }
+        )
+      else
+        (model, Cmd.none)
     Port portmsg -> case portmsg of
+      ReadLocalStorage { key, value } ->
+        case key of
+          "events" -> case (value |> decodeLocalStorage eventListDecoder) of
+            Ok (Just events) -> ({ model | events = events }, Cmd.none)
+            _ -> (model, Cmd.none)
+          _ -> (model, Cmd.none)
       UuidAndTime { uuid, time } ->
         case model.submittedDraft of
           Just submitted ->
@@ -97,17 +131,16 @@ update msg model =
                 , createdAt = Time.millisToPosix time
                 , id = uuid
                 }
+              events = newEvent :: model.events
             in
-              ({ model | submittedDraft = Nothing, events = (newEvent :: model.events) }
-              , Cmd.none
-              )
+              requestSave { model | submittedDraft = Nothing, events = events }
           Nothing -> (model, Cmd.none)
       KeyPress key ->
         case model.mode of
           Drafting -> (model, Cmd.none)
           ViewEvents ->
             case key of
-              Key.Spacebar -> (nextItem model, Cmd.none)
+              Key.Spacebar -> nextItem model |> requestSave
               Key.N -> ({ model | mode = Drafting }, Cmd.none)
               Key.B ->
                 let
@@ -115,14 +148,14 @@ update msg model =
                       first::rest -> { first | isBlocked = not first.isBlocked }::rest
                       _ -> model.events
                 in
-                  ({ model | events = newEvents  }, Cmd.none)
+                  requestSave { model | events = newEvents  }
               Key.D ->
                 let
                   newEvents = case model.events of
                       _::rest -> rest
                       _ -> model.events
                 in
-                  ({ model | events = newEvents  }, Cmd.none)
+                  requestSave { model | events = newEvents  }
               _ -> (model, Cmd.none)
     EventCreatorMsg creatorMsg -> case creatorMsg of
       EventCreator.UpdateDraft newDraft ->
@@ -142,17 +175,17 @@ update msg model =
         )
       EventCreator.Hide -> ({ model | mode = ViewEvents }, Cmd.none)
     EventButtonMsg buttonMsg -> case buttonMsg of
-      Event.NextItem -> (nextItem model, Cmd.none)
-      Event.BumpToTop id -> (bumpToTop model id, Cmd.none)
+      Event.NextItem -> nextItem model |> requestSave
+      Event.BumpToTop id -> bumpToTop model id |> requestSave
       Event.Delete id ->
-        ({ model | events = List.filter (\e -> not (e.id == id)) model.events }, Cmd.none)
+        requestSave { model | events = List.filter (\e -> not (e.id == id)) model.events }
       Event.ToggleBlocked id ->
         let
           newEvents = List.map
             (\e -> if e.id == id then { e | isBlocked = not e.isBlocked } else e)
             model.events
         in
-          ({ model | events = newEvents }, Cmd.none)
+          requestSave { model | events = newEvents }
 
 -- VIEW
 

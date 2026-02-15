@@ -28,6 +28,17 @@ function genId() {
 app.ports.getNewEventData.subscribe(
   () => app.ports.uuidAndTime.send({ uuid: genId(), time: Date.now() })
 );
+
+app.ports.writeLocalStorage.subscribe(
+  ({ key, value }) => window.localStorage.setItem(key, value)
+);
+
+app.ports.requestLocalStorage.subscribe(
+  (key) => {
+    const value = window.localStorage.getItem(key) ?? '';
+    app.ports.readLocalStorage.send({ key, value });
+  }
+);
 </script>
 
 
