@@ -40,7 +40,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ = (
-  { mode = Drafting
+  { mode = ViewEvents
   , draft = EventCreator.emptyDraft
   , submittedDraft = Nothing
   , events = []
