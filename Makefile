@@ -14,7 +14,7 @@ run: # Build the site and watch for changes
 	(cp -R frontend/static frontend/build)
 	(cp frontend/index.html frontend/build/index.html)
 	(cd frontend && ../.bin/elm make src/Main.elm --output=build/main.js)
-	trap 'kill %1' SIGINT
+	trap 'kill %1; kill %2; kill %3' SIGINT
 	(cd frontend && while inotifywait -r ./src -e create,delete,modify; do ../.bin/elm make src/Main.elm --output=build/main.js ; done) &
 	(cd frontend && npx @tailwindcss/cli -i main.css -o build/compiled.css --watch=always) &
 	(cd frontend && npx live-server --mount='/event-loop:build' --open='/event-loop')
