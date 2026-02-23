@@ -90,6 +90,9 @@ requestSave model =
     |> Task.perform (\_ -> AttemptSave (model.unsavedChanges + 1))
   )
 
+focusDraftInput : Cmd Msg
+focusDraftInput = Task.attempt (\_ -> NoOp) (Browser.Dom.focus EventCreator.textInputId)
+
 -- UPDATE
 
 nextItem : Model -> Model
@@ -145,8 +148,9 @@ update msg model =
           ViewEvents ->
             case key of
               Key.Spacebar -> nextItem model |> requestSave
-              Key.N -> ({ model | mode = Drafting }, Cmd.none)
+              Key.N -> ({ model | mode = Drafting }, focusDraftInput)
               Key.H -> ({ model | modalOpen = not model.modalOpen }, Cmd.none)
+              Key.Escape -> ({ model | modalOpen = False, mode = ViewEvents }, Cmd.none)
               Key.B ->
                 let
                   newEvents = case model.events of
@@ -176,7 +180,7 @@ update msg model =
             )
       EventCreator.Expand -> (
         { model | mode = Drafting }
-        , Task.attempt (\_ -> NoOp) (Browser.Dom.focus EventCreator.textInputId)
+        , focusDraftInput
         )
       EventCreator.Hide -> ({ model | mode = ViewEvents }, Cmd.none)
     EventButtonMsg buttonMsg -> case buttonMsg of
@@ -202,7 +206,7 @@ view model = div []
   , header []
     [ h1 [ class "max-w-4xl px-8 sm:px-16 mx-auto py-8 text-bold flex justify-between" ]
       [ div [ class "flex justify-between" ]
-        [ img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 -ml-[32px] pb-2" ] []
+        [ img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 pb-2" ] []
         , h1 [] [ text "Event loop" ]
         ]
       , Modal.viewIcon |> Html.map ModalMsg

@@ -9,6 +9,7 @@ type Key
   | B
   | D
   | H
+  | Escape
   | Other
 
 keyDecoder : Decode.Decoder Key
@@ -22,6 +23,8 @@ toDirection string =
       Spacebar
     "Spacebar" ->
       Spacebar
+    "Escape" ->
+      Escape
     "Backspace" ->
       Backspace
     "n" ->
