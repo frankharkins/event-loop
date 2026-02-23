@@ -8,6 +8,7 @@ type Key
   | N
   | B
   | D
+  | H
   | Other
 
 keyDecoder : Decode.Decoder Key
@@ -29,5 +30,7 @@ toDirection string =
       B
     "d" ->
       D
+    "h" ->
+      H
     _ ->
       Other

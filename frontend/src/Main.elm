@@ -146,6 +146,7 @@ update msg model =
             case key of
               Key.Spacebar -> nextItem model |> requestSave
               Key.N -> ({ model | mode = Drafting }, Cmd.none)
+              Key.H -> ({ model | modalOpen = not model.modalOpen }, Cmd.none)
               Key.B ->
                 let
                   newEvents = case model.events of
