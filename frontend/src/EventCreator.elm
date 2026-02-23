@@ -40,7 +40,10 @@ view : Bool -> DraftEvent -> Html Msg
 view expanded draft =
   if expanded then
     div [] [
-      Html.form [ onSubmit (CreateEvent draft) ]
+      Html.form
+        [ onSubmit (CreateEvent draft)
+        , class "-mx-8 px-8 -mb-4 pb-4 pt-2 rounded-[4px] border-[1px] border-muted-extra"
+        ]
         [ input [ placeholder "Event name"
               , class mainInputClass
               , value draft.name
