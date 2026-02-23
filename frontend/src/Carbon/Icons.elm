@@ -1,7 +1,7 @@
 module Carbon.Icons exposing (..)
 
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (attribute, class)
+import Html.Attributes as Attr
 import Svg exposing (svg)
 import Svg.Attributes as SvgAttr exposing (..)
 
@@ -64,6 +64,8 @@ errorOutline title attr =
         [ Svg.style []
             [ text " .cls-1 { fill: none; } " ]
         ]
+    , Svg.title []
+        [ text title ]
     , Svg.rect
         [ SvgAttr.x "14.9004"
         , SvgAttr.y "7.2004"
@@ -97,6 +99,8 @@ chevronUpOutline title attr =
         [ Svg.style []
             [ text " .cls-1 { fill: none; } " ]
         ]
+    , Svg.title []
+        [ text title ]
     , Svg.polygon
         [ SvgAttr.points "9.4142 19.4142 16 12.8286 22.5858 19.4142 24 18 16 10 8 18 9.4142 19.4142"
         ]
@@ -138,6 +142,41 @@ chevronDownOutline title attr =
         [ SvgAttr.id "_Transparent_Rectangle_"
         , Attr.attribute "data-name" "&lt;Transparent Rectangle&gt;"
         , SvgAttr.class "cls-1"
+        , SvgAttr.width "32"
+        , SvgAttr.height "32"
+        ]
+        []
+    ]
+
+help : String -> List (Svg.Attribute msg) -> Html msg
+help title attr =
+  svg
+    ([ SvgAttr.id "icon"
+    , SvgAttr.viewBox "0 0 32 32"
+    , SvgAttr.fill "currentColor"
+    ] ++ attr)
+    [ Svg.defs []
+        [ Svg.style []
+            [ text ".cls-1{fill:none;}" ]
+        ]
+    , Svg.title []
+        [ text title ]
+    , Svg.path
+        [ SvgAttr.d "M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,26A12,12,0,1,1,28,16,12,12,0,0,1,16,28Z"
+        ]
+        []
+    , Svg.circle
+        [ SvgAttr.cx "16"
+        , SvgAttr.cy "23.5"
+        , SvgAttr.r "1.5"
+        ]
+        []
+    , Svg.path
+        [ SvgAttr.d "M17,8H15.5A4.49,4.49,0,0,0,11,12.5V13h2v-.5A2.5,2.5,0,0,1,15.5,10H17a2.5,2.5,0,0,1,0,5H15v4.5h2V17a4.5,4.5,0,0,0,0-9Z"
+        ]
+        []
+    , Svg.rect
+        [ SvgAttr.class "cls-1"
         , SvgAttr.width "32"
         , SvgAttr.height "32"
         ]

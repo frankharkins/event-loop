@@ -105,7 +105,12 @@
   to { opacity: 100%; }
 }
 
-
+@layer utilities {
+  td,
+  th {
+      @apply p-2 border border-muted-extra;
+  }
+}
 
 @theme {
   --color-title: var(--color-title);

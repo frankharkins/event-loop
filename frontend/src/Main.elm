@@ -10,6 +10,7 @@ import Task
 import Platform.Cmd as Cmd
 
 import Event exposing (..)
+import Modal exposing (..)
 import EventCreator exposing (..)
 import Key exposing (keyDecoder)
 import LocalStorage exposing (..)
@@ -36,6 +37,7 @@ type alias Model =
   , submittedDraft: Maybe EventCreator.DraftEvent
   , events: List Event
   , unsavedChanges: Int
+  , modalOpen: Bool
   }
 
 init : () -> ( Model, Cmd Msg )
@@ -45,6 +47,7 @@ init _ = (
   , submittedDraft = Nothing
   , events = []
   , unsavedChanges = 0
+  , modalOpen = False
   }
   , requestLocalStorage "events"
   )
@@ -75,6 +78,7 @@ port readLocalStorage : (LocalStorageValue -> msg) -> Sub msg
 type Msg
   = Port PortMsg
   | EventCreatorMsg EventCreator.Msg
+  | ModalMsg Modal.Msg
   | EventButtonMsg Event.Msg
   | AttemptSave Int
   | NoOp
@@ -186,15 +190,21 @@ update msg model =
             model.events
         in
           requestSave { model | events = newEvents }
+    ModalMsg ToggleOpen ->
+      ({ model | modalOpen = not model.modalOpen }, Cmd.none)
 
 -- VIEW
 
 view : Model -> Html Msg
 view model = div []
-  [  header []
+  [ Modal.modal model.modalOpen |> Html.map ModalMsg
+  , header []
     [ h1 [ class "max-w-4xl px-8 sm:px-16 mx-auto py-8 text-bold flex justify-between" ]
-      [ text "Event loop"
-      , img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 pb-1" ] []
+      [ div [ class "flex justify-between" ]
+        [ img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 -ml-[32px] pb-2" ] []
+        , h1 [] [ text "Event loop" ]
+        ]
+      , Modal.viewIcon |> Html.map ModalMsg
       ]
     ]
   , div [ class "max-w-4xl px-8 sm:px-16 mx-auto" ]
