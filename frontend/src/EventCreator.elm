@@ -42,7 +42,7 @@ view expanded draft =
     div [] [
       Html.form
         [ onSubmit (CreateEvent draft)
-        , class "-mx-4 px-4 -mb-4 pb-4 -mt-1 pt-1 rounded-[4px] border-[1px] border-muted-extra"
+        , class "-mx-4 px-4 -mb-4 pb-4 -mt-1 pt-1 rounded-[4px] border-[1px] border-muted-extra shadow-lg"
         ]
         [ input [ placeholder "Event name"
               , class mainInputClass

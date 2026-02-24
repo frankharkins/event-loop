@@ -25,7 +25,7 @@ modal open =
       ]
     , onClick ToggleOpen
     ]
-    [ div [ class "border-px border-title bg-bg p-8 rounded-[4px] max-w-[800px] max-h-full overflow-auto" ]
+    [ div [ class "border-px border-title bg-bg p-8 rounded-[4px] max-w-[800px] max-h-full overflow-auto shadow-lg" ]
       [ h2 [ class "font-bold text-title mb-4" ] [ text "What is Event loop?" ]
       , p [] [ text """
                     Event loop is a todo list designed for asynchronous work,
