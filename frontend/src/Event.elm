@@ -127,7 +127,7 @@ backlogEvent lastItem index event =
       ]
     )
 
-controlPanelButton : String -> Msg -> (String -> List (Attribute Msg) -> Html Msg) -> Html Msg
+controlPanelButton : String -> Msg -> Icon Msg -> Html Msg
 controlPanelButton name action icon =
   button
     [ onClick action

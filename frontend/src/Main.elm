@@ -195,8 +195,10 @@ update msg model =
             model.events
         in
           requestSave { model | events = newEvents }
-    HelpModalMsg ToggleOpen ->
-      ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
+    HelpModalMsg Open ->
+      ({ model | helpModelOpen = True }, Cmd.none)
+    HelpModalMsg Close ->
+      ({ model | helpModelOpen = False }, Cmd.none)
 
 -- VIEW
 
@@ -209,7 +211,7 @@ view model = div []
         [ img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 pb-2" ] []
         , h1 [] [ text "Event loop" ]
         ]
-      , HelpModal.viewIcon |> Html.map HelpModalMsg
+      , HelpModal.headerIconButton |> Html.map HelpModalMsg
       ]
     ]
   , div [ class "max-w-4xl px-8 sm:px-16 mx-auto" ]

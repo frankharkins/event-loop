@@ -1,25 +1,21 @@
-module HelpModal exposing (viewIcon, modal, Msg(..))
+module HelpModal exposing (headerIconButton, modal, Msg(..))
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
-import Svg.Attributes as SvgAttr
 
 import Carbon.Icons exposing (..)
 import Utils.Modal as Modal
+import Utils.HeaderIconButton
 
-type Msg = ToggleOpen
+type Msg = Open | Close
 
-iconClass : String
-iconClass = "w-[1lh] h-[1lh] cursor-pointer text-muted hover:text-body transition duration-100"
-
-viewIcon : Html Msg
-viewIcon =
-  Carbon.Icons.help "Help" [ SvgAttr.class iconClass, onClick ToggleOpen ]
+headerIconButton : Html Msg
+headerIconButton =
+  Utils.HeaderIconButton.view "Help" Open Carbon.Icons.help
 
 modal : Bool -> Html Msg
 modal open =
-  Modal.view open ToggleOpen
+  Modal.view open Close
       [ h2 [ class "font-bold text-title mb-4" ] [ text "What is Event loop?" ]
       , p [] [ text """
                     Event loop is a todo list designed for asynchronous work,

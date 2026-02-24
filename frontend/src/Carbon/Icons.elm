@@ -5,7 +5,9 @@ import Html.Attributes as Attr
 import Svg exposing (svg)
 import Svg.Attributes as SvgAttr exposing (..)
 
-trashCan : String -> List (Svg.Attribute msg) -> Html msg
+type alias Icon msg = String -> List (Svg.Attribute msg) -> Html msg
+
+trashCan : Icon msg
 trashCan title attr =
   svg
     ([ SvgAttr.id "icon"
@@ -53,7 +55,7 @@ trashCan title attr =
         []
     ]
 
-errorOutline : String -> List (Svg.Attribute msg) -> Html msg
+errorOutline : Icon msg
 errorOutline title attr =
   svg
     ([ SvgAttr.id "icon"
@@ -88,7 +90,7 @@ errorOutline title attr =
         []
     ]
 
-chevronUpOutline : String -> List (Svg.Attribute msg) -> Html msg
+chevronUpOutline : Icon msg
 chevronUpOutline title attr =
   svg
     ([ SvgAttr.id "icon"
@@ -119,7 +121,7 @@ chevronUpOutline title attr =
         []
     ]
 
-chevronDownOutline : String -> List (Svg.Attribute msg) -> Html msg
+chevronDownOutline : Icon msg
 chevronDownOutline title attr =
   svg
     ([ SvgAttr.id "icon"
@@ -130,6 +132,8 @@ chevronDownOutline title attr =
         [ Svg.style []
             [ text " .cls-1 { fill: none; } " ]
         ]
+    , Svg.title []
+        [ text title ]
     , Svg.polygon
         [ SvgAttr.points "9.4142 12.5858 16 19.1714 22.5858 12.5858 24 14 16 22 8 14 9.4142 12.5858"
         ]
@@ -148,7 +152,7 @@ chevronDownOutline title attr =
         []
     ]
 
-help : String -> List (Svg.Attribute msg) -> Html msg
+help : Icon msg
 help title attr =
   svg
     ([ SvgAttr.id "icon"
