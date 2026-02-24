@@ -15,6 +15,7 @@ import Carbon.Icons exposing (..)
 type Msg
   = Delete String
   | ToggleBlocked String
+  | Completed String
   | NextItem
   | BumpToTop String
 
@@ -151,4 +152,5 @@ controlPanel allowedAction eventId =
       None -> []
     , [ controlPanelButton "Toggle blocked" (ToggleBlocked eventId) Carbon.Icons.errorOutline ]
     , [ controlPanelButton "Delete item" (Delete eventId) Carbon.Icons.trashCan ]
+    , [ controlPanelButton "Mark complete" (Completed eventId) Carbon.Icons.checkMark ]
     ] |> List.concat)

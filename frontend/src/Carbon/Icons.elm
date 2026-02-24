@@ -186,3 +186,65 @@ help title attr =
         ]
         []
     ]
+
+taskComplete : Icon msg
+taskComplete title attr =
+    svg
+    ([ SvgAttr.id "icon"
+    , SvgAttr.viewBox "0 0 32 32"
+    , SvgAttr.fill "currentColor"
+    ] ++ attr)
+    [ Svg.defs []
+        [ Svg.style []
+            [ text ".cls-1{fill:none;}" ]
+        ]
+    , Svg.title []
+        [ text title ]
+    , Svg.polygon
+        [ SvgAttr.points "22 27.18 19.41 24.59 18 26 22 30 30 22 28.59 20.59 22 27.18"
+        ]
+        []
+    , Svg.path
+        [ SvgAttr.d "M25,5H22V4a2.0058,2.0058,0,0,0-2-2H12a2.0058,2.0058,0,0,0-2,2V5H7A2.0058,2.0058,0,0,0,5,7V28a2.0058,2.0058,0,0,0,2,2h9V28H7V7h3v3H22V7h3V18h2V7A2.0058,2.0058,0,0,0,25,5ZM20,8H12V4h8Z"
+        ]
+        []
+    , Svg.rect
+        [ SvgAttr.id "_Transparent_Rectangle_"
+        , Attr.attribute "data-name" "<Transparent Rectangle>"
+        , SvgAttr.class "cls-1"
+        , SvgAttr.width "32"
+        , SvgAttr.height "32"
+        ]
+        []
+    ]
+
+checkMark : Icon msg
+checkMark title attr =
+    svg
+    ([ SvgAttr.id "icon"
+    , SvgAttr.viewBox "0 0 32 32"
+    , SvgAttr.fill "currentColor"
+    ] ++ attr)
+    [ Svg.defs []
+        [ Svg.style []
+            [ text ".cls-1{fill:none;}" ]
+        ]
+    , Svg.title []
+        [ text title ]
+    , Svg.polygon
+        [ SvgAttr.points "14 21.414 9 16.413 10.413 15 14 18.586 21.585 11 23 12.415 14 21.414"
+        ]
+        []
+    , Svg.path
+        [ SvgAttr.d "M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,26A12,12,0,1,1,28,16,12,12,0,0,1,16,28Z"
+        ]
+        []
+    , Svg.rect
+        [ SvgAttr.id "_Transparent_Rectangle_"
+        , Attr.attribute "data-name" "<Transparent Rectangle>"
+        , SvgAttr.class "cls-1"
+        , SvgAttr.width "32"
+        , SvgAttr.height "32"
+        ]
+        []
+    ]

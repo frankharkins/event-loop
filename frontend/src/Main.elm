@@ -11,6 +11,7 @@ import Platform.Cmd as Cmd
 
 import Event exposing (..)
 import HelpModal exposing (..)
+import CompletedEvents exposing (..)
 import EventCreator exposing (..)
 import Key exposing (keyDecoder)
 import LocalStorage exposing (..)
@@ -38,6 +39,8 @@ type alias Model =
   , events: List Event
   , unsavedChanges: Int
   , helpModelOpen: Bool
+  , completedModalOpen: Bool
+  , completedEvents: List Event
   }
 
 init : () -> ( Model, Cmd Msg )
@@ -48,6 +51,8 @@ init _ = (
   , events = []
   , unsavedChanges = 0
   , helpModelOpen = False
+  , completedModalOpen = False
+  , completedEvents = []
   }
   , requestLocalStorage "events"
   )
@@ -79,6 +84,7 @@ type Msg
   = Port PortMsg
   | EventCreatorMsg EventCreator.Msg
   | HelpModalMsg HelpModal.Msg
+  | CompletedEventsMsg CompletedEvents.Msg
   | EventButtonMsg Event.Msg
   | AttemptSave Int
   | NoOp
@@ -188,6 +194,20 @@ update msg model =
       Event.BumpToTop id -> bumpToTop model id |> requestSave
       Event.Delete id ->
         requestSave { model | events = List.filter (\e -> not (e.id == id)) model.events }
+      Event.Completed id ->
+          let
+            maybeCompletedEvent = model.events
+              |> List.filter (\e -> e.id == id)
+              |> List.head
+            rest = model.events
+              |> List.filter (\e -> e.id /= id)
+          in case maybeCompletedEvent of
+            Just event ->
+              requestSave { model
+                | events = rest
+                , completedEvents = event :: model.completedEvents
+                }
+            Nothing -> (model, Cmd.none)
       Event.ToggleBlocked id ->
         let
           newEvents = List.map
@@ -195,23 +215,31 @@ update msg model =
             model.events
         in
           requestSave { model | events = newEvents }
-    HelpModalMsg Open ->
+    HelpModalMsg HelpModal.Open ->
       ({ model | helpModelOpen = True }, Cmd.none)
-    HelpModalMsg Close ->
+    HelpModalMsg HelpModal.Close ->
       ({ model | helpModelOpen = False }, Cmd.none)
+    CompletedEventsMsg CompletedEvents.Open ->
+      ({ model | completedModalOpen = True }, Cmd.none)
+    CompletedEventsMsg CompletedEvents.Close ->
+      ({ model | completedModalOpen = False }, Cmd.none)
 
 -- VIEW
 
 view : Model -> Html Msg
 view model = div []
   [ HelpModal.modal model.helpModelOpen |> Html.map HelpModalMsg
+  , CompletedEvents.modal model |> Html.map CompletedEventsMsg
   , header []
     [ h1 [ class "max-w-4xl px-8 sm:px-16 mx-auto py-8 text-bold flex justify-between" ]
       [ div [ class "flex justify-between" ]
         [ img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 pb-2" ] []
         , h1 [] [ text "Event loop" ]
         ]
-      , HelpModal.headerIconButton |> Html.map HelpModalMsg
+      , div [ class "flex justify-between gap-2" ]
+        [ CompletedEvents.headerIconButton |> Html.map CompletedEventsMsg
+        , HelpModal.headerIconButton |> Html.map HelpModalMsg
+        ]
       ]
     ]
   , div [ class "max-w-4xl px-8 sm:px-16 mx-auto" ]
