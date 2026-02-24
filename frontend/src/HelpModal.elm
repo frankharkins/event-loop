@@ -1,4 +1,4 @@
-module Modal exposing (viewIcon, modal, Msg(..))
+module HelpModal exposing (viewIcon, modal, Msg(..))
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Svg.Attributes as SvgAttr
 
 import Carbon.Icons exposing (..)
+import Utils.Modal as Modal
 
 type Msg = ToggleOpen
 
@@ -18,14 +19,7 @@ viewIcon =
 
 modal : Bool -> Html Msg
 modal open =
-  div
-    [ classList
-      [ ("opacity-0 invisible", not open)
-      , ("absolute z-100 transition-all duration-250 top-0 left-0 w-screen h-screen bg-muted/50 flex justify-center items-center p-8", True)
-      ]
-    , onClick ToggleOpen
-    ]
-    [ div [ class "border-px border-title bg-bg p-8 rounded-[4px] max-w-[800px] max-h-full overflow-auto shadow-lg" ]
+  Modal.view open ToggleOpen
       [ h2 [ class "font-bold text-title mb-4" ] [ text "What is Event loop?" ]
       , p [] [ text """
                     Event loop is a todo list designed for asynchronous work,
@@ -49,7 +43,6 @@ modal open =
         , link "https://frankharkins.github.io/" "Frank Harkins"
         , text "."
         ]
-      ]
     ]
 
 link : String -> String -> Html msg

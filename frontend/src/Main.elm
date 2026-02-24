@@ -10,7 +10,7 @@ import Task
 import Platform.Cmd as Cmd
 
 import Event exposing (..)
-import Modal exposing (..)
+import HelpModal exposing (..)
 import EventCreator exposing (..)
 import Key exposing (keyDecoder)
 import LocalStorage exposing (..)
@@ -37,7 +37,7 @@ type alias Model =
   , submittedDraft: Maybe EventCreator.DraftEvent
   , events: List Event
   , unsavedChanges: Int
-  , modalOpen: Bool
+  , helpModelOpen: Bool
   }
 
 init : () -> ( Model, Cmd Msg )
@@ -47,7 +47,7 @@ init _ = (
   , submittedDraft = Nothing
   , events = []
   , unsavedChanges = 0
-  , modalOpen = False
+  , helpModelOpen = False
   }
   , requestLocalStorage "events"
   )
@@ -78,7 +78,7 @@ port readLocalStorage : (LocalStorageValue -> msg) -> Sub msg
 type Msg
   = Port PortMsg
   | EventCreatorMsg EventCreator.Msg
-  | ModalMsg Modal.Msg
+  | HelpModalMsg HelpModal.Msg
   | EventButtonMsg Event.Msg
   | AttemptSave Int
   | NoOp
@@ -149,8 +149,8 @@ update msg model =
             case key of
               Key.Spacebar -> nextItem model |> requestSave
               Key.N -> ({ model | mode = Drafting }, focusDraftInput)
-              Key.H -> ({ model | modalOpen = not model.modalOpen }, Cmd.none)
-              Key.Escape -> ({ model | modalOpen = False, mode = ViewEvents }, Cmd.none)
+              Key.H -> ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
+              Key.Escape -> ({ model | helpModelOpen = False, mode = ViewEvents }, Cmd.none)
               Key.B ->
                 let
                   newEvents = case model.events of
@@ -195,21 +195,21 @@ update msg model =
             model.events
         in
           requestSave { model | events = newEvents }
-    ModalMsg ToggleOpen ->
-      ({ model | modalOpen = not model.modalOpen }, Cmd.none)
+    HelpModalMsg ToggleOpen ->
+      ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
 
 -- VIEW
 
 view : Model -> Html Msg
 view model = div []
-  [ Modal.modal model.modalOpen |> Html.map ModalMsg
+  [ HelpModal.modal model.helpModelOpen |> Html.map HelpModalMsg
   , header []
     [ h1 [ class "max-w-4xl px-8 sm:px-16 mx-auto py-8 text-bold flex justify-between" ]
       [ div [ class "flex justify-between" ]
         [ img [ src "/event-loop/static/favicon.svg", class "inline h-[1.5lh] mr-2 pb-2" ] []
         , h1 [] [ text "Event loop" ]
         ]
-      , Modal.viewIcon |> Html.map ModalMsg
+      , HelpModal.viewIcon |> Html.map HelpModalMsg
       ]
     ]
   , div [ class "max-w-4xl px-8 sm:px-16 mx-auto" ]
