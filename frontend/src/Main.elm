@@ -219,10 +219,14 @@ update msg model =
       ({ model | helpModelOpen = True }, Cmd.none)
     HelpModalMsg HelpModal.Close ->
       ({ model | helpModelOpen = False }, Cmd.none)
+    HelpModalMsg HelpModal.NoOp ->
+      (model, Cmd.none)
     CompletedEventsMsg CompletedEvents.Open ->
       ({ model | completedModalOpen = True }, Cmd.none)
     CompletedEventsMsg CompletedEvents.Close ->
       ({ model | completedModalOpen = False }, Cmd.none)
+    CompletedEventsMsg CompletedEvents.NoOp ->
+      (model, Cmd.none)
 
 -- VIEW
 

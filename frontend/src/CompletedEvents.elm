@@ -8,7 +8,7 @@ import Carbon.Icons exposing (..)
 import Utils.Modal as Modal
 import Utils.HeaderIconButton
 
-type Msg = Open | Close
+type Msg = Open | Close | NoOp
 
 headerIconButton : Html Msg
 headerIconButton =
@@ -22,7 +22,7 @@ type alias Model a =
 
 modal : Model a -> Html Msg
 modal { completedModalOpen, completedEvents } =
-  Modal.view completedModalOpen Close
+  Modal.view completedModalOpen Close NoOp
     [ h2 [ class "font-bold text-title mb-4" ] [ text "Completed events" ]
     , ul []
       (List.map

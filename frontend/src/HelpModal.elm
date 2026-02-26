@@ -7,7 +7,7 @@ import Carbon.Icons exposing (..)
 import Utils.Modal as Modal
 import Utils.HeaderIconButton
 
-type Msg = Open | Close
+type Msg = Open | Close | NoOp
 
 headerIconButton : Html Msg
 headerIconButton =
@@ -15,7 +15,7 @@ headerIconButton =
 
 modal : Bool -> Html Msg
 modal open =
-  Modal.view open Close
+  Modal.view open Close NoOp
       [ h2 [ class "font-bold text-title mb-4" ] [ text "What is Event loop?" ]
       , p [] [ text """
                     Event loop is a todo list designed for asynchronous work,

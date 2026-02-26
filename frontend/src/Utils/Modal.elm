@@ -1,13 +1,14 @@
-module Utils.Modal exposing (..)
+module Utils.Modal exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, stopPropagationOn)
 
 import Carbon.Icons exposing (..)
+import Json.Decode
 
-view : Bool -> msg -> List (Html msg) -> Html msg
-view isOpen closeMsg children =
+view : Bool -> msg -> msg -> List (Html msg) -> Html msg
+view isOpen closeMsg noOp children =
   div
     [ classList
       [ ("opacity-0 invisible", not isOpen)
@@ -16,6 +17,12 @@ view isOpen closeMsg children =
     , onClick closeMsg
     ]
     [ div
-      [ class "border-px border-title bg-bg p-8 rounded-[4px] max-w-[800px] max-h-full overflow-auto shadow-lg" ]
+      [ class "border-px border-title bg-bg p-8 rounded-[4px] max-w-[800px] max-h-full overflow-auto shadow-lg"
+      , stopPropagationOn "click" (alwaysStopPropogation noOp)
+      ]
       children
     ]
+
+alwaysStopPropogation : msg -> Json.Decode.Decoder (msg, Bool)
+alwaysStopPropogation msg =
+    Json.Decode.map (\_ -> (msg, True)) (Json.Decode.succeed msg)
