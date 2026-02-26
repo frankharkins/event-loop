@@ -62,7 +62,7 @@ view expanded draft =
               , span [ class "ml-2" ] [ text "blocked" ]
               ]
             ]
-          , div []
+          , div [ class "flex" ]
             [ if (isEmpty draft.name) then
                 nothing
               else
