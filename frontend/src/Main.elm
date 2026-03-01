@@ -40,7 +40,8 @@ type alias Model =
   , unsavedChanges: Int
   , helpModelOpen: Bool
   , completedModalOpen: Bool
-  , completedEvents: List Event
+  , pendingCompletedEvents: List Event
+  , completedEvents: List CompletedEvents.CompletedEvent
   }
 
 init : () -> ( Model, Cmd Msg )
@@ -52,6 +53,7 @@ init _ = (
   , unsavedChanges = 0
   , helpModelOpen = False
   , completedModalOpen = False
+  , pendingCompletedEvents = []
   , completedEvents = []
   }
   , requestLocalStorage "events"
@@ -135,19 +137,27 @@ update msg model =
             _ -> (model, Cmd.none)
           _ -> (model, Cmd.none)
       UuidAndTime { uuid, time } ->
-        case model.submittedDraft of
-          Just submitted ->
-            let
-              newEvent =
-                { name = submitted.name
-                , isBlocked = submitted.isBlocked
-                , createdAt = Time.millisToPosix time
-                , id = uuid
-                }
-              events = newEvent :: model.events
-            in
-              requestSave { model | submittedDraft = Nothing, events = events }
-          Nothing -> (model, Cmd.none)
+        let
+          events = case model.submittedDraft of
+            Just submitted ->
+                  { name = submitted.name
+                  , isBlocked = submitted.isBlocked
+                  , createdAt = Time.millisToPosix time
+                  , id = uuid
+                  } :: model.events
+            Nothing -> model.events
+          completedEvents = (List.map
+            (\e -> { event = e, completedAt = Time.millisToPosix time })
+            model.pendingCompletedEvents
+            ) ++ model.completedEvents
+        in
+          requestSave
+            { model
+            | submittedDraft = Nothing
+            , events = events
+            , completedEvents = completedEvents
+            , pendingCompletedEvents = []
+            }
       KeyPress key ->
         case model.mode of
           Drafting -> (model, Cmd.none)
@@ -203,10 +213,12 @@ update msg model =
               |> List.filter (\e -> e.id /= id)
           in case maybeCompletedEvent of
             Just event ->
-              requestSave { model
-                | events = rest
-                , completedEvents = event :: model.completedEvents
-                }
+                ({ model
+                 | events = rest
+                 , pendingCompletedEvents = event :: model.pendingCompletedEvents
+                 }
+                , getNewEventData ()
+                )
             Nothing -> (model, Cmd.none)
       Event.ToggleBlocked id ->
         let
