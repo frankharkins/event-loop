@@ -24,9 +24,12 @@ modal : Model a -> Html Msg
 modal { completedModalOpen, completedEvents } =
   Modal.view completedModalOpen Close NoOp
     [ h2 [ class "font-bold text-title mb-4" ] [ text "Completed events" ]
-    , ul []
-      (List.map
-        (\e -> li [ class "my-2" ] [ text e.name ])
-        completedEvents
-      )
+    , if List.length completedEvents > 0 then
+        ul []
+        (List.map
+          (\e -> li [ class "my-2" ] [ text e.name ])
+          completedEvents
+        )
+      else
+        p [] [ text "Mark events as completed and they'll show up here" ]
     ]
