@@ -1,4 +1,4 @@
-module Event exposing (Event, view, Msg(..), eventListDecoder, encodeEventList)
+module Event exposing (Event, view, Msg(..), decode, encode)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,6 +10,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 
 import Carbon.Icons exposing (..)
+import Utils.PosixTime as PosixTime
 
 
 type Msg
@@ -27,35 +28,20 @@ type alias Event =
   }
 
 -- JSON
-
-eventListDecoder : Decode.Decoder (List Event)
-eventListDecoder =
-  Decode.list eventDecoder
-
-eventDecoder : Decode.Decoder Event
-eventDecoder =
+decode : Decode.Decoder Event
+decode =
   Decode.map4 Event
     (Decode.field "name" Decode.string)
     (Decode.field "id" Decode.string)
-    (Decode.field "createdAt" posixTimeDecoder)
+    (Decode.field "createdAt" PosixTime.decode)
     (Decode.field "isBlocked" Decode.bool)
 
-posixTimeDecoder : Decode.Decoder Time.Posix
-posixTimeDecoder =
-  Decode.int
-    |> Decode.andThen (Time.millisToPosix >> Decode.succeed )
-
-encodeEventList : List Event -> String
-encodeEventList events =
-  Encode.list eventEncoder events
-    |> Encode.encode 0
-
-eventEncoder : Event -> Encode.Value
-eventEncoder event =
+encode : Event -> Encode.Value
+encode event =
   Encode.object
     [ ("name", Encode.string event.name)
     , ("id", Encode.string event.id)
-    , ("createdAt", Encode.int <| Time.posixToMillis event.createdAt)
+    , ("createdAt", PosixTime.encode event.createdAt)
     , ("isBlocked", Encode.bool event.isBlocked)
     ]
 

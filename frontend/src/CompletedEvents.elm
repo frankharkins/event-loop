@@ -1,13 +1,16 @@
-module CompletedEvents exposing (headerIconButton, modal, Msg(..), CompletedEvent)
+module CompletedEvents exposing (headerIconButton, modal, Msg(..), CompletedEvent, decode, encode)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Time
+import Json.Decode as Decode
+import Json.Encode as Encode
 
-import Event exposing (Event)
+import Event exposing (Event, decode)
 import Carbon.Icons exposing (..)
 import Utils.Modal as Modal
 import Utils.HeaderIconButton
+import Utils.PosixTime as PosixTime
 
 type Msg = Open | Close | NoOp
 
@@ -15,6 +18,20 @@ type alias CompletedEvent =
   { event: Event
   , completedAt: Time.Posix
   }
+
+decode : Decode.Decoder CompletedEvent
+decode =
+  Decode.map2 CompletedEvent
+    (Decode.field "event" Event.decode)
+    (Decode.field "completedAt" PosixTime.decode)
+
+
+encode : CompletedEvent -> Encode.Value
+encode completedEvent =
+    Encode.object
+    [ ("event", Event.encode completedEvent.event)
+    , ("completedAt", PosixTime.encode completedEvent.completedAt)
+    ]
 
 -- Icon to open the modal
 headerIconButton : Html Msg

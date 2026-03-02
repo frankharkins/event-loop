@@ -9,6 +9,7 @@ import Time
 import Task
 import Platform.Cmd as Cmd
 
+import Model exposing (Model)
 import Event exposing (..)
 import HelpModal exposing (..)
 import CompletedEvents exposing (..)
@@ -28,36 +29,8 @@ main =
     , subscriptions = subscriptions >> Sub.map Port
     }
 
-type AppMode
-  = Drafting
-  | ViewEvents
-
-type alias Model =
-  { mode: AppMode
-  , draft: EventCreator.DraftEvent
-  , submittedDraft: Maybe EventCreator.DraftEvent
-  , events: List Event
-  , unsavedChanges: Int
-  , helpModelOpen: Bool
-  , completedModalOpen: Bool
-  , pendingCompletedEvents: List Event
-  , completedEvents: List CompletedEvents.CompletedEvent
-  }
-
-init : () -> ( Model, Cmd Msg )
-init _ = (
-  { mode = ViewEvents
-  , draft = EventCreator.emptyDraft
-  , submittedDraft = Nothing
-  , events = []
-  , unsavedChanges = 0
-  , helpModelOpen = False
-  , completedModalOpen = False
-  , pendingCompletedEvents = []
-  , completedEvents = []
-  }
-  , requestLocalStorage "events"
-  )
+init : () -> (Model, Cmd Msg)
+init _ = (Model.default, requestLocalStorage "events")
 
 -- PORTS AND SUBSCRIPTIONS
 type PortMsg
@@ -125,15 +98,15 @@ update msg model =
     AttemptSave unsavedChanges ->
       if unsavedChanges >= model.unsavedChanges then
         ({ model | unsavedChanges = 0 }
-        , writeLocalStorage { key = "events", value = encodeEventList model.events }
+        , writeLocalStorage { key = "events", value = Model.serializePersistent model }
         )
       else
         (model, Cmd.none)
     Port portmsg -> case portmsg of
       ReadLocalStorage { key, value } ->
         case key of
-          "events" -> case (value |> decodeLocalStorage eventListDecoder) of
-            Ok (Just events) -> ({ model | events = events }, Cmd.none)
+          "events" -> case (value |> decodeLocalStorage Model.decodePersistent) of
+            Ok (Just { events, completedEvents }) -> ({ model | events = events, completedEvents = completedEvents }, Cmd.none)
             _ -> (model, Cmd.none)
           _ -> (model, Cmd.none)
       UuidAndTime { uuid, time } ->
@@ -160,13 +133,13 @@ update msg model =
             }
       KeyPress key ->
         case model.mode of
-          Drafting -> (model, Cmd.none)
-          ViewEvents ->
+          Model.Drafting -> (model, Cmd.none)
+          Model.ViewEvents ->
             case key of
               Key.Spacebar -> nextItem model |> requestSave
-              Key.N -> ({ model | mode = Drafting }, focusDraftInput)
+              Key.N -> ({ model | mode = Model.Drafting }, focusDraftInput)
               Key.H -> ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
-              Key.Escape -> ({ model | helpModelOpen = False, mode = ViewEvents }, Cmd.none)
+              Key.Escape -> ({ model | helpModelOpen = False, mode = Model.ViewEvents }, Cmd.none)
               Key.B ->
                 let
                   newEvents = case model.events of
@@ -191,14 +164,14 @@ update msg model =
         in case trimmedDraft.name of
           "" -> (model, Cmd.none)
           _ -> (
-            { model | mode = ViewEvents, draft = EventCreator.emptyDraft, submittedDraft = Just trimmedDraft }
+            { model | mode = Model.ViewEvents, draft = EventCreator.emptyDraft, submittedDraft = Just trimmedDraft }
             , getNewEventData ()
             )
       EventCreator.Expand -> (
-        { model | mode = Drafting }
+        { model | mode = Model.Drafting }
         , focusDraftInput
         )
-      EventCreator.Hide -> ({ model | mode = ViewEvents }, Cmd.none)
+      EventCreator.Hide -> ({ model | mode = Model.ViewEvents }, Cmd.none)
     EventButtonMsg buttonMsg -> case buttonMsg of
       Event.NextItem -> nextItem model |> requestSave
       Event.BumpToTop id -> bumpToTop model id |> requestSave
@@ -259,7 +232,7 @@ view model = div []
       ]
     ]
   , div [ class "max-w-4xl px-8 sm:px-16 mx-auto" ]
-    [ EventCreator.view (model.mode == Drafting) model.draft |> Html.map EventCreatorMsg
+    [ EventCreator.view (model.mode == Model.Drafting) model.draft |> Html.map EventCreatorMsg
     , Event.view model.events |> Html.map EventButtonMsg
     ]
   ]
