@@ -49,13 +49,11 @@ encode event =
 
 view : List Event -> Html Msg
 view events =
-  let
-    canSkip = (List.length events) > 1
-  in
   Html.Keyed.node "div" [] (
     case events of
-        first::rest -> (firstEvent first canSkip)::(rest |> List.indexedMap (backlogEvent ((List.length events) - 2)))
-        _ -> []
+        [] -> []
+        [first] -> [ firstEvent first False ]
+        first::rest -> (firstEvent first True)::(rest |> List.indexedMap (backlogEvent ((List.length events) - 2)))
     )
 
 -- Shared between firstEvent and backlogEvent
@@ -71,17 +69,17 @@ firstEvent event canSkip =
     ("Don't remount me"
     , Html.Keyed.node "div" [ class "my-[3lh]" ]
       [ ("keep me", div [] [ text instruction ])
-      , (event.id, div [
-          class (String.join " "
-            [ "p-2 my-0 text-title font-bold animate-main-task flex justify-between"
-            , sharedClasses
-            , if event.isBlocked then stripedBackground else ""
+      , (event.id
+        , div
+          [ classList
+            [ ("p-2 my-0 text-title font-bold animate-main-task flex justify-between", True)
+            , (sharedClasses, True)
+            , (stripedBackground, event.isBlocked)
             ]
-          )
-        ](List.concat
-        [ [ span [ class "bg-bg" ] [ text event.name ] ]
-        , [ controlPanel allowedAction event.id ]
-        ])
+          ]
+          [ span [ class "bg-bg" ] [ text event.name ]
+          , controlPanel allowedAction event.id
+          ]
         )
      ]
     )

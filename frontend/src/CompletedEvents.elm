@@ -6,7 +6,7 @@ import Time
 import Json.Decode as Decode
 import Json.Encode as Encode
 
-import Event exposing (Event, decode)
+import Event exposing (Event)
 import Carbon.Icons exposing (..)
 import Utils.Modal as Modal
 import Utils.HeaderIconButton
