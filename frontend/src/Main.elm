@@ -8,7 +8,6 @@ import Html.Attributes exposing (..)
 import Time
 import Task
 import Platform.Cmd as Cmd
-import Json.Decode as Decode
 
 import Model exposing (Model)
 import Event exposing (..)
@@ -108,9 +107,7 @@ update msg model =
         case key of
           "events" -> case (value |> decodeLocalStorage Model.decodePersistent) of
             Ok (Just { events, completedEvents }) -> ({ model | events = events, completedEvents = completedEvents }, Cmd.none)
-            _ -> case (value |> decodeLocalStorage (Decode.list Event.decode)) of
-              Ok (Just events) -> ({ model | events = events }, Cmd.none)
-              _ -> (model, Cmd.none)
+            _ -> (model, Cmd.none)
           _ -> (model, Cmd.none)
       UuidAndTime { uuid, time } ->
         let
