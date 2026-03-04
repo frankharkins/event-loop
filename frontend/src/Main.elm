@@ -8,13 +8,13 @@ import Html.Attributes exposing (..)
 import Time
 import Task
 import Platform.Cmd as Cmd
+import Json.Decode as Decode
 
 import Model exposing (Model)
 import Event exposing (..)
 import HelpModal exposing (..)
 import CompletedEvents exposing (..)
 import EventCreator exposing (..)
-import Key exposing (keyDecoder)
 import LocalStorage exposing (..)
 import Process
 
@@ -35,13 +35,13 @@ init _ = (Model.default, requestLocalStorage "events")
 -- PORTS AND SUBSCRIPTIONS
 type PortMsg
   = UuidAndTime { uuid: String, time: Int }
-  | KeyPress Key.Key
+  | KeyPress String
   | ReadLocalStorage LocalStorageValue
 
 subscriptions : Model -> Sub PortMsg
 subscriptions _ = Sub.batch
   [ uuidAndTime UuidAndTime
-  , keyDecoder |> Browser.Events.onKeyDown >> Sub.map KeyPress
+  , (Decode.field "key" Decode.string) |> Browser.Events.onKeyDown >> Sub.map KeyPress
   , readLocalStorage ReadLocalStorage
   ]
 
@@ -155,21 +155,21 @@ update msg model =
           Model.Drafting -> (model, Cmd.none)
           Model.ViewEvents ->
             case key of
-              Key.Spacebar -> nextItem model |> requestSave
-              Key.N -> ({ model | mode = Model.Drafting }, focusDraftInput)
-              Key.H -> ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
-              Key.Enter -> case List.head model.events of
+              " " -> nextItem model |> requestSave
+              "n" -> ({ model | mode = Model.Drafting }, focusDraftInput)
+              "h" -> ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
+              "Enter" -> case List.head model.events of
                 Nothing -> (model, Cmd.none)
                 Just e -> eventCompleted e.id model
-              Key.Escape -> ({ model | helpModelOpen = False, mode = Model.ViewEvents }, Cmd.none)
-              Key.B ->
+              "Escape" -> ({ model | helpModelOpen = False, mode = Model.ViewEvents }, Cmd.none)
+              "b" ->
                 let
                   newEvents = case model.events of
                       first::rest -> { first | isBlocked = not first.isBlocked }::rest
                       _ -> model.events
                 in
                   requestSave { model | events = newEvents  }
-              Key.D ->
+              "d" ->
                 let
                   newEvents = case model.events of
                       _::rest -> rest
