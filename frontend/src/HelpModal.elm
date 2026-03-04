@@ -50,6 +50,7 @@ keyboardShortcuts =
   [ ("n", "Create new task")
   , ("b", "Toggle if the current task is blocked")
   , ("d", "Delete the current task")
+  , ("Enter", "Mark current task as completed")
   , ("Space", "Skip to next task")
   , ("h", "Open this help modal")
   ]

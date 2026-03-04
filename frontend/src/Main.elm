@@ -91,6 +91,25 @@ bumpToTop model id =
   in
     { model | events = newEvents }
 
+
+eventCompleted : String -> Model -> (Model, Cmd Msg)
+eventCompleted id model =
+  let
+    maybeCompletedEvent = model.events
+      |> List.filter (\e -> e.id == id)
+      |> List.head
+    rest = model.events
+      |> List.filter (\e -> e.id /= id)
+  in case maybeCompletedEvent of
+    Just event ->
+        ({ model
+         | events = rest
+         , pendingCompletedEvents = event :: model.pendingCompletedEvents
+         }
+        , getNewEventData ()
+        )
+    Nothing -> (model, Cmd.none)
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
@@ -139,6 +158,9 @@ update msg model =
               Key.Spacebar -> nextItem model |> requestSave
               Key.N -> ({ model | mode = Model.Drafting }, focusDraftInput)
               Key.H -> ({ model | helpModelOpen = not model.helpModelOpen }, Cmd.none)
+              Key.Enter -> case List.head model.events of
+                Nothing -> (model, Cmd.none)
+                Just e -> eventCompleted e.id model
               Key.Escape -> ({ model | helpModelOpen = False, mode = Model.ViewEvents }, Cmd.none)
               Key.B ->
                 let
@@ -177,22 +199,7 @@ update msg model =
       Event.BumpToTop id -> bumpToTop model id |> requestSave
       Event.Delete id ->
         requestSave { model | events = List.filter (\e -> not (e.id == id)) model.events }
-      Event.Completed id ->
-          let
-            maybeCompletedEvent = model.events
-              |> List.filter (\e -> e.id == id)
-              |> List.head
-            rest = model.events
-              |> List.filter (\e -> e.id /= id)
-          in case maybeCompletedEvent of
-            Just event ->
-                ({ model
-                 | events = rest
-                 , pendingCompletedEvents = event :: model.pendingCompletedEvents
-                 }
-                , getNewEventData ()
-                )
-            Nothing -> (model, Cmd.none)
+      Event.Completed id -> eventCompleted id model
       Event.ToggleBlocked id ->
         let
           newEvents = List.map

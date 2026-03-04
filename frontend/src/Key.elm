@@ -5,11 +5,12 @@ import Json.Decode as Decode
 type Key
   = Spacebar
   | Backspace
+  | Escape
+  | Enter
   | N
   | B
   | D
   | H
-  | Escape
   | Other
 
 keyDecoder : Decode.Decoder Key
@@ -23,6 +24,8 @@ toDirection string =
       Spacebar
     "Spacebar" ->
       Spacebar
+    "Enter" ->
+      Enter
     "Escape" ->
       Escape
     "Backspace" ->
