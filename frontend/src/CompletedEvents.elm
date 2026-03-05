@@ -103,12 +103,13 @@ addEventToSummaries nextEvent days =
         }]
       latest::rest ->
         if isSameDay latest.date eventDate then
-          { date = latest.date, events = nextEvent::latest.events}::rest
+          { date = latest.date, events = nextEvent::latest.events }::rest
         else
-          {
-            date = posixToCalendarDate nextEvent.completedAt
+          [ { date = posixToCalendarDate nextEvent.completedAt
             , events = [ nextEvent ]
-          }::rest
+            }
+          , latest
+          ] ++ rest
 
 
 -- Input to the modal
